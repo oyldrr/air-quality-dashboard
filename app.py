@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import random
 from datetime import datetime
 import mysql.connector
@@ -75,6 +75,7 @@ def get_sensor_data():
         conn.commit()
         cursor.close()
         conn.close()
+        print(request.host," - - [",datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"]", "Stored in database")
     except Exception as e:
         print("DB Error:", e)
 
@@ -123,11 +124,11 @@ def get_weather_data():
 def auto_fetch_data():
     while True:
         try:
-            requests.get("http://127.0.0.1:5000/sensor")
-            requests.get("http://127.0.0.1:5000/weather")
+            requests.get(request.host_url+"/sensor")
+            requests.get(request.host_url+"/weather")
         except Exception as e:
             print("Auto fetch error:", e)
-        time.sleep(60) 
+        time.sleep(600) 
 
 threading.Thread(target=auto_fetch_data, daemon=True).start()
 

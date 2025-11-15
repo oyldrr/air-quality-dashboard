@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Air Quality Dashboard</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
+<!-- JustGage -->
+<script src="https://cdn.jsdelivr.net/npm/raphael"></script>
+<script src="https://cdn.jsdelivr.net/npm/justgage"></script>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Vanta Clouds -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta/dist/vanta.clouds.min.js"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div id="vanta-bg">
+    <header>
+        <h1>AQI: --</h1>
+    </header>
+
+    <!-- AQI Bar -->
+    <section id="aqi-section">
+        <div id="aqi-bar-container">
+            <div id="aqi-bar">
+                <span id="aqi-indicator"></span>
+            </div>
+            <div class="aqi-labels">
+                <span>Hazardous</span>
+                <span>Very Unhealthy</span>
+                <span>Unhealthy</span>
+                <span>Moderate</span>
+                <span>Good</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- PM Cards -->
+    <section id="pm-cards">
+        <div class="pm-card">
+            <h3>PM1.0</h3>
+            <div id="pm1-gauge"></div>
+        </div>
+        <div class="pm-card">
+            <h3>PM2.5</h3>
+            <div id="pm25-gauge"></div>
+        </div>
+        <div class="pm-card">
+            <h3>PM10</h3>
+            <div id="pm10-gauge"></div>
+        </div>
+    </section>
+
+    <!-- Weather Cards -->
+    <section id="weather-cards">
+        <div class="weather-card">
+            <i class="fa-solid fa-temperature-high" id="temp-icon"></i>
+            <p id="temp">-- °C</p>
+        </div>
+        <div class="weather-card">
+            <i class="fa-solid fa-cloud-sun" id="condition-icon"></i>
+            <p id="condition">--</p>
+        </div>
+        <div class="weather-card">
+            <i class="fa-solid fa-water" id="humidity-icon"></i>
+            <p id="humidity">-- %</p>
+        </div>
+        <div class="weather-card">
+            <i class="fa-solid fa-wind" id="wind-icon"></i>
+            <p id="wind">-- m/s</p>
+        </div>
+        <div class="weather-card">
+            <i class="fa-solid fa-gauge" id="pressure-icon"></i>
+            <p id="pressure">-- hPa</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 Air Quality Dashboard</p>
+    </footer>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+<script>
+VANTA.CLOUDS({
+  el: "#vanta-bg",
+  mouseControls: false,
+  touchControls: false,
+  gyroControls: false,
+  minHeight: 200.0,
+  minWidth: 200.0,
+});
+</script>
+</body>
+</html>

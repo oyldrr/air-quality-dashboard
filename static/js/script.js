@@ -1,5 +1,14 @@
 $(window).on('load', function () {
+    // Sayfa giriş animasyonu
+    const section = document.getElementById("page-content");
+    if (section) {
+        section.classList.add("page-enter");
+        setTimeout(() => {
+            section.classList.add("page-enter-active");
+        }, 20);
+    }
 
+    // AQI hesaplama fonksiyonu
     function calculateAQI(pm25, pm10) {
         function aqiFromPM(pm, breakpoints) {
             if (pm === null || pm === undefined) return 0;
@@ -39,7 +48,7 @@ $(window).on('load', function () {
         return Math.round(Math.max(aqi_pm25 || 0, aqi_pm10 || 0));
     }
 
-
+    // JustGage tanımları
     const pm1Gauge = new JustGage({
         id: "pm1-gauge",
         value: 0,
@@ -76,7 +85,6 @@ $(window).on('load', function () {
         valueFontColor: "#ffffff"
     });
 
-
     setTimeout(() => {
         try {
             const t1 = document.querySelector("#pm1-gauge .jg-title");
@@ -89,86 +97,58 @@ $(window).on('load', function () {
     }, 500);
 
 
-    function updateAQIIndicator(aqi) {
-        const maxAQI = 500;
-        const bounded = Math.max(0, Math.min(aqi || 0, maxAQI));
-        const percent = (bounded / maxAQI) * 100;
-
-        const leftPos = (100 - percent);
-        $('#aqi-indicator').css('left', leftPos + '%');
-    }
-
+    // Sensor verisi çekme
     function fetchSensorData() {
-        $.getJSON('/sensor')
+        $.getJSON('/sensor-data')
             .done(function (data) {
-
-
-                const pm1 = (data.pm1_atm !== undefined && data.pm1_atm !== null) ? data.pm1_atm
-                    : (data.pm1_cf1 !== undefined ? data.pm1_cf1 : 0);
-                const pm25 = (data.pm25_atm !== undefined && data.pm25_atm !== null) ? data.pm25_atm
-                    : (data.pm25_cf1 !== undefined ? data.pm25_cf1 : 0);
-                const pm10 = (data.pm10_atm !== undefined && data.pm10_atm !== null) ? data.pm10_atm
-                    : (data.pm10_cf1 !== undefined ? data.pm10_cf1 : 0);
+                const pm1 = data.pm1_atm ?? data.pm1_cf1 ?? 0;
+                const pm25 = data.pm25_atm ?? data.pm25_cf1 ?? 0;
+                const pm10 = data.pm10_atm ?? data.pm10_cf1 ?? 0;
 
                 if (data.connected) {
-
                     pm1Gauge.refresh(pm1);
                     pm25Gauge.refresh(pm25);
                     pm10Gauge.refresh(pm10);
 
-
                     const computedAQI = calculateAQI(pm25, pm10);
-
-                    const aqi = (typeof data.aqi === 'number') ? data.aqi : computedAQI;
-
+                    const aqi = typeof data.aqi === 'number' ? data.aqi : computedAQI;
 
                     $('header h1').text(`AQI: ${aqi}`);
-                    updateAQIIndicator(aqi);
-                    updateSensorStatus(data.connected);
+                    $('#aqi-indicator').css('left', `${100 - (aqi / 500 * 100)}%`);
                 } else {
-
                     pm1Gauge.refresh(0);
                     pm25Gauge.refresh(0);
                     pm10Gauge.refresh(0);
                     $('header h1').text('AQI: --');
                     $('#aqi-indicator').css('left', '100%');
-                    updateSensorStatus(data.disconnected);
                 }
             })
             .fail(function (err) {
-                console.error("Failed to fetch /sensor:", err);
-
+                console.error("Failed to fetch /sensor-data:", err);
                 $('header h1').text('AQI: --');
             });
     }
 
+    // Weather verisi çekme
     function fetchWeatherData() {
-        $.getJSON('/weather')
+        $.getJSON('/weather-data')
             .done(function (data) {
-
                 if (data.temperature !== undefined) $('#temp').text(data.temperature + ' °C');
                 if (data.humidity !== undefined) $('#humidity').text(data.humidity + ' %');
                 if (data.pressure !== undefined) $('#pressure').text(data.pressure + ' hPa');
                 if (data.wind_speed !== undefined) $('#wind').text(data.wind_speed + ' m/s');
                 if (data.weather_desc !== undefined) $('#condition').text(data.weather_desc);
 
+                // Icon renkleri
+                const desc = (data.weather_desc || '').toLowerCase();
+                if (desc.includes("sun") || desc.includes("clear")) $('#condition-icon').attr("class", "fa-solid fa-sun").css("color", "#FFD54F");
+                else if (desc.includes("cloud")) $('#condition-icon').attr("class", "fa-solid fa-cloud").css("color", "#B0BEC5");
+                else if (desc.includes("rain") || desc.includes("shower")) $('#condition-icon').attr("class", "fa-solid fa-cloud-showers-heavy").css("color", "#4FC3F7");
+                else if (desc.includes("snow")) $('#condition-icon').attr("class", "fa-solid fa-snowflake").css("color", "#E1F5FE");
+                else if (desc.includes("storm") || desc.includes("thunder")) $('#condition-icon').attr("class", "fa-solid fa-cloud-bolt").css("color", "#FFB74D");
+                else $('#condition-icon').attr("class", "fa-solid fa-cloud-sun").css("color", "#90CAF9");
 
-                const desc = (data.weather_desc || '').toString().toLowerCase();
-                if (desc.includes("sun") || desc.includes("clear")) {
-                    $('#condition-icon').attr("class", "fa-solid fa-sun").css("color", "#FFD54F");
-                } else if (desc.includes("cloud")) {
-                    $('#condition-icon').attr("class", "fa-solid fa-cloud").css("color", "#B0BEC5");
-                } else if (desc.includes("rain") || desc.includes("shower")) {
-                    $('#condition-icon').attr("class", "fa-solid fa-cloud-showers-heavy").css("color", "#4FC3F7");
-                } else if (desc.includes("snow")) {
-                    $('#condition-icon').attr("class", "fa-solid fa-snowflake").css("color", "#E1F5FE");
-                } else if (desc.includes("storm") || desc.includes("thunder")) {
-                    $('#condition-icon').attr("class", "fa-solid fa-cloud-bolt").css("color", "#FFB74D");
-                } else {
-                    $('#condition-icon').attr("class", "fa-solid fa-cloud-sun").css("color", "#90CAF9");
-                }
-
-
+                // Sıcaklık rengi
                 const temp = Number(data.temperature);
                 if (!isNaN(temp)) {
                     if (temp < 0) $('#temp-icon').css('color', '#00B0FF');
@@ -177,53 +157,24 @@ $(window).on('load', function () {
                     else $('#temp-icon').css('color', '#FF7043');
                 }
 
-
+                // Nem rengi
                 const hum = Number(data.humidity);
-                if (!isNaN(hum)) {
-                    $('#humidity-icon').css('color', hum > 70 ? '#42A5F5' : '#A5D6A7');
-                }
+                if (!isNaN(hum)) $('#humidity-icon').css('color', hum > 70 ? '#42A5F5' : '#A5D6A7');
 
-
+                // Rüzgar rengi
                 const wind = Number(data.wind_speed);
-                if (!isNaN(wind)) {
-                    $('#wind-icon').css('color', wind > 10 ? '#EF5350' : '#FFF176');
-                }
+                if (!isNaN(wind)) $('#wind-icon').css('color', wind > 10 ? '#EF5350' : '#FFF176');
             })
             .fail(function (err) {
-                console.error("Failed to fetch /weather:", err);
+                console.error("Failed to fetch /weather-data:", err);
             });
     }
 
-
+    // İlk veri çekme
     fetchSensorData();
     fetchWeatherData();
 
-
-    setInterval(fetchSensorData, 6000);
-    setInterval(fetchWeatherData, 6000);
+    // Interval ile sürekli güncelle
+    setInterval(fetchSensorData, 60000);
+    setInterval(fetchWeatherData, 60000);
 });
-
-
-// Dark/Light Mode toggle
-$('#theme-toggle').click(function () {
-    $('body').toggleClass('dark-mode');
-
-    const icon = $(this).find('i');
-    if ($('body').hasClass('dark-mode')) {
-        icon.removeClass('fa-moon').addClass('fa-sun');
-    } else {
-        icon.removeClass('fa-sun').addClass('fa-moon');
-    }
-});
-
-// Update sensor status dynamically
-function updateSensorStatus(isConnected) {
-    const statusSpan = $('#sensor-status');
-    if (isConnected) {
-        statusSpan.text('Connected').removeClass('sensor-disconnected').addClass('sensor-connected');
-        statusSpan.prepend('<i class="fa-solid fa-circle"></i> ');
-    } else {
-        statusSpan.text('Disconnected').removeClass('sensor-connected').addClass('sensor-disconnected');
-        statusSpan.prepend('<i class="fa-solid fa-circle"></i> ');
-    }
-}

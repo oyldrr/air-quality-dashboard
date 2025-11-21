@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Air Quality Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- JustGage -->
+    <script src="https://cdn.jsdelivr.net/npm/raphael"></script>
+    <script src="https://cdn.jsdelivr.net/npm/justgage"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
+
+    <div id="page-content">
+      <section class="sensor-section">
+        <h1 class="sensor-title">Air Quality Sensor Specifications</h1>
+
+        <div class="sensor-container">
+          <!-- Left: 3D Model -->
+          <div class="sensor-image-box" id="sensor-3d-container"></div>
+
+          <!-- Right: Specs -->
+          <div class="sensor-specs-box">
+            <h2>Technical Details</h2>
+            <ul class="sensor-specs-list">
+              <li><strong>Model:</strong> PMS7003 Air Quality Sensor</li>
+              <li><strong>Measurement Types:</strong> PM1.0, PM2.5, PM10</li>
+              <li>
+                <strong>Detection Method:</strong> Laser Scattering Technology
+              </li>
+              <li><strong>Power Supply:</strong> 5V DC</li>
+              <li><strong>Data Output:</strong> UART Serial (3.3V Logic)</li>
+              <li><strong>Resolution:</strong> 1 µg/m³</li>
+              <li><strong>Operating Temperature:</strong> -10°C to 60°C</li>
+              <li><strong>Humidity Range:</strong> 0% to 90% RH</li>
+              <li><strong>Typical Accuracy:</strong> ±10%</li>
+              <li><strong>Lifetime:</strong> Approx. 3 Years</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/sensor.js') }}"></script>
+
+
+  </body>
+</html>

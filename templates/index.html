@@ -29,86 +29,69 @@
     />
   </head>
   <body>
-    <nav class="navbar">
-      <div class="nav-left">
-        <a href="/"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-        <a href="/history"
-          ><i class="fa-solid fa-clock-rotate-left"></i> History</a
-        >
-        <a href="/censor"><i class="fa-solid fa-microchip"></i> Censor</a>
-      </div>
-      <div class="nav-right">
-        <!-- Dark/Light Mode Toggle -->
-        <button id="theme-toggle">
-          <i class="fa-solid fa-moon"></i>
-        </button>
-        <!-- Sensor status -->
-        <span id="sensor-status" class="sensor-disconnected">
-          <i class="fa-solid fa-circle"></i> Disconnected
-        </span>
-      </div>
-    </nav>
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
+    <div id="page-content">
+      <header>
+        <h1>AQI: --</h1>
+      </header>
 
-    <header>
-      <h1>AQI: --</h1>
-    </header>
-
-    <!-- AQI Bar -->
-    <section id="aqi-section">
-      <div id="aqi-bar-container">
-        <div id="aqi-bar">
-          <span id="aqi-indicator"></span>
+      <!-- AQI Bar -->
+      <section id="aqi-section">
+        <div id="aqi-bar-container">
+          <div id="aqi-bar">
+            <span id="aqi-indicator"></span>
+          </div>
+          <div class="aqi-labels">
+            <span>Hazardous</span>
+            <span>Very Unhealthy</span>
+            <span>Unhealthy</span>
+            <span>Moderate</span>
+            <span>Good</span>
+          </div>
         </div>
-        <div class="aqi-labels">
-          <span>Hazardous</span>
-          <span>Very Unhealthy</span>
-          <span>Unhealthy</span>
-          <span>Moderate</span>
-          <span>Good</span>
+      </section>
+
+      <!-- PM Cards -->
+      <section id="pm-cards">
+        <div class="pm-card">
+          <h3>PM1.0</h3>
+          <div id="pm1-gauge"></div>
         </div>
-      </div>
-    </section>
+        <div class="pm-card">
+          <h3>PM2.5</h3>
+          <div id="pm25-gauge"></div>
+        </div>
+        <div class="pm-card">
+          <h3>PM10</h3>
+          <div id="pm10-gauge"></div>
+        </div>
+      </section>
 
-    <!-- PM Cards -->
-    <section id="pm-cards">
-      <div class="pm-card">
-        <h3>PM1.0</h3>
-        <div id="pm1-gauge"></div>
-      </div>
-      <div class="pm-card">
-        <h3>PM2.5</h3>
-        <div id="pm25-gauge"></div>
-      </div>
-      <div class="pm-card">
-        <h3>PM10</h3>
-        <div id="pm10-gauge"></div>
-      </div>
-    </section>
-
-    <!-- Weather Cards -->
-    <section id="weather-cards">
-      <div class="weather-card">
-        <i class="fa-solid fa-temperature-high" id="temp-icon"></i>
-        <p id="temp">-- °C</p>
-      </div>
-      <div class="weather-card">
-        <i class="fa-solid fa-cloud-sun" id="condition-icon"></i>
-        <p id="condition">--</p>
-      </div>
-      <div class="weather-card">
-        <i class="fa-solid fa-water" id="humidity-icon"></i>
-        <p id="humidity">-- %</p>
-      </div>
-      <div class="weather-card">
-        <i class="fa-solid fa-wind" id="wind-icon"></i>
-        <p id="wind">-- m/s</p>
-      </div>
-      <div class="weather-card">
-        <i class="fa-solid fa-gauge" id="pressure-icon"></i>
-        <p id="pressure">-- hPa</p>
-      </div>
-    </section>
-
+      <!-- Weather Cards -->
+      <section id="weather-cards">
+        <div class="weather-card">
+          <i class="fa-solid fa-temperature-high" id="temp-icon"></i>
+          <p id="temp">-- °C</p>
+        </div>
+        <div class="weather-card">
+          <i class="fa-solid fa-cloud-sun" id="condition-icon"></i>
+          <p id="condition">--</p>
+        </div>
+        <div class="weather-card">
+          <i class="fa-solid fa-water" id="humidity-icon"></i>
+          <p id="humidity">-- %</p>
+        </div>
+        <div class="weather-card">
+          <i class="fa-solid fa-wind" id="wind-icon"></i>
+          <p id="wind">-- m/s</p>
+        </div>
+        <div class="weather-card">
+          <i class="fa-solid fa-gauge" id="pressure-icon"></i>
+          <p id="pressure">-- hPa</p>
+        </div>
+      </section>
+    </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   </body>
 </html>

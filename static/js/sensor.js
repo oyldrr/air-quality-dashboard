@@ -10,7 +10,6 @@ const camera = new THREE.PerspectiveCamera(
     500
 );
 
-// Sabit kamera pozisyonu
 camera.position.set(1.25, -.75, 3.5);
 
 let object;
@@ -21,12 +20,12 @@ loader.load(
     function (gltf) {
         object = gltf.scene;
 
-        // Model boyutu ve konumunu normalize edelim
+        
         const box = new THREE.Box3().setFromObject(object);
         const center = box.getCenter(new THREE.Vector3());
-        object.position.sub(center); // modeli merkezle
+        object.position.sub(center); 
         const size = box.getSize(new THREE.Vector3()).length();
-        const scaleFactor = 1.5 / size; // uygun bir ölçek
+        const scaleFactor = 1.5 / size; 
         object.scale.setScalar(scaleFactor);
 
         scene.add(object);
@@ -46,13 +45,13 @@ document.getElementById("sensor-3d-container").appendChild(renderer.domElement);
 const ambientLight = new THREE.AmbientLight(0xffffff, .5);
 scene.add(ambientLight);
 
-// Animasyon
+
 function animate() {
     requestAnimationFrame(animate);
 
     if (object) {
-        object.rotation.y += 0.001; // çok yavaş dönme
-        object.rotation.x = -5; // hafif x rotasyonu
+        object.rotation.y += 0.001; 
+        object.rotation.x = -5; 
     }
 
     renderer.render(scene, camera);

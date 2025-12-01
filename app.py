@@ -5,6 +5,8 @@ import mysql.connector
 import threading
 import time
 import requests
+import struct
+import serial
 
 app = Flask(__name__)
 
@@ -38,61 +40,68 @@ def sensor_page():
 
 @app.route("/sensor-data")
 def get_sensor_data():
-    sensor_connected = random.choice([True, True, True, False])
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    if not sensor_connected:
-        data = {
-            "connected": False,
-            "pm1_cf1": None,
-            "pm25_cf1": None,
-            "pm10_cf1": None,
-            "pm1_atm": None,
-            "pm25_atm": None,
-            "pm10_atm": None,
-            "timestamp": timestamp
-        }
-    else:
-        data = {
-            "connected": True,
-            "pm1_cf1": random.randint(1, 20),
-            "pm25_cf1": random.randint(5, 60),
-            "pm10_cf1": random.randint(10, 120),
-            "pm1_atm": random.randint(1, 25),
-            "pm25_atm": random.randint(5, 65),
-            "pm10_atm": random.randint(10, 130),
-            "timestamp": timestamp
-        }
-
-
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO sensor_readings 
-            (timestamp, pm1_cf1, pm25_cf1, pm10_cf1, pm1_atm, pm25_atm, pm10_atm, is_connected)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (
-            timestamp,
-            data["pm1_cf1"],
-            data["pm25_cf1"],
-            data["pm10_cf1"],
-            data["pm1_atm"],
-            data["pm25_atm"],
-            data["pm10_atm"],
-            sensor_connected
-        ))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        print(request.host," - - [",datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"]", "Stored in database")
-    except Exception as e:
-        print("DB Error:", e)
+        ser = serial.Serial("COM7", 9600, timeout=2)
+        while True:
+            b1 = ser.read(1)
+            if b1 != b'\x42': continue
+            b2 = ser.read(1)
+            if b2 != b'\x4D': continue
+            frame = ser.read(30)
+            if len(frame) != 30: continue
+            pm_data = frame[2:30]  # 28 byte veri
+            data_parsed = struct.unpack(">HHHHHHHHHHHHHH", pm_data)
+            pm1_cf1, pm25_cf1, pm10_cf1 = data_parsed[0], data_parsed[1], data_parsed[2]
+            pm1_atm, pm25_atm, pm10_atm = data_parsed[3], data_parsed[4], data_parsed[5]
+            sensor_connected = True
+            break
+    except:
+        sensor_connected = False
+        pm1_cf1 = pm25_cf1 = pm10_cf1 = None
+        pm1_atm = pm25_atm = pm10_atm = None
+
+    data = {
+        "connected": sensor_connected,
+        "pm1_cf1": pm1_cf1,
+        "pm25_cf1": pm25_cf1,
+        "pm10_cf1": pm10_cf1,
+        "pm1_atm": pm1_atm,
+        "pm25_atm": pm25_atm,
+        "pm10_atm": pm10_atm,
+        "timestamp": timestamp
+    }
+
+    if sensor_connected:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO sensor_readings 
+                (timestamp, pm1_cf1, pm25_cf1, pm10_cf1, pm1_atm, pm25_atm, pm10_atm, is_connected)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                timestamp,
+                pm1_cf1,
+                pm25_cf1,
+                pm10_cf1,
+                pm1_atm,
+                pm25_atm,
+                pm10_atm,
+                True
+            ))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print("DB Error:", e)
 
     return jsonify(data)
 
 
-API_KEY = "" #0ec18d9840616f60ed241475f874e555
+
+API_KEY = "0ec18d9840616f60ed241475f874e555" #
 CITY = "Bydgoszcz,PL"
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
@@ -118,7 +127,6 @@ def get_weather_data():
             "humidity": api_data["main"]["humidity"],
             "pressure": api_data["main"]["pressure"],
             "wind_speed": api_data["wind"]["speed"],
-            "aqi": None,  # Eğer AQI hesaplamak istersen buraya ekle
             "weather_desc": api_data["weather"][0]["description"],
             "timestamp": timestamp
         }
@@ -128,15 +136,14 @@ def get_weather_data():
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO weather_readings
-            (timestamp, temperature, humidity, pressure, wind_speed, aqi, weather_desc)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            (timestamp, temperature, humidity, pressure, wind_speed, weather_desc)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """, (
             timestamp,
             data["temperature"],
             data["humidity"],
             data["pressure"],
             data["wind_speed"],
-            data["aqi"],
             data["weather_desc"]
         ))
         conn.commit()
@@ -145,17 +152,6 @@ def get_weather_data():
 
     except Exception as e:
         print("Weather fetch/store error:", e)
-        # Hata durumunda mock veri de bırakabilirsin
-        data = {
-            "temperature": round(random.uniform(0, 20), 1),
-            "humidity": random.randint(30, 90),
-            "pressure": random.randint(980, 1030),
-            "wind_speed": round(random.uniform(0, 10), 1),
-            "aqi": random.randint(20, 150),
-            "weather_desc": random.choice(["Clear", "Cloudy", "Rain", "Snow"]),
-            "timestamp": timestamp
-        }
-
     return jsonify(data)
 
 def auto_fetch_data():
@@ -188,7 +184,7 @@ def history_data():
 
         # Weather history
         cursor.execute("""
-            SELECT id, timestamp, temperature, humidity, pressure, wind_speed, aqi, weather_desc
+            SELECT id, timestamp, temperature, humidity, pressure, wind_speed, weather_desc
             FROM weather_readings
             ORDER BY id DESC
             LIMIT 500

@@ -105,6 +105,9 @@ $(window).on('load', function () {
                 const pm25 = data.pm25_atm ?? data.pm25_cf1 ?? 0;
                 const pm10 = data.pm10_atm ?? data.pm10_cf1 ?? 0;
 
+                const statusEl = $('#sensor-status');
+
+
                 if (data.connected) {
                     pm1Gauge.refresh(pm1);
                     pm25Gauge.refresh(pm25);
@@ -115,16 +118,22 @@ $(window).on('load', function () {
 
                     $('header h1').text(`AQI: ${aqi}`);
                     $('#aqi-indicator').css('left', `${100 - (aqi / 500 * 100)}%`);
+
+                    statusEl.text("Connected");
+                    statusEl.removeClass("sensor-disconnected").addClass("sensor-connected");
                 } else {
                     pm1Gauge.refresh(0);
                     pm25Gauge.refresh(0);
                     pm10Gauge.refresh(0);
                     $('header h1').text('AQI: --');
                     $('#aqi-indicator').css('left', '100%');
+                    statusEl.text("Disconnected");
+                    statusEl.removeClass("sensor-connected").addClass("sensor-disconnected");
                 }
             })
             .fail(function (err) {
                 console.error("Failed to fetch /sensor-data:", err);
+                $('#sensor-status').text("Disconnected").removeClass("sensor-connected").addClass("sensor-disconnected");
                 $('header h1').text('AQI: --');
             });
     }

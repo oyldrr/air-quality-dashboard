@@ -1,5 +1,4 @@
 $(window).on('load', function () {
-    // Sayfa giriş animasyonu
     const section = document.getElementById("page-content");
     if (section) {
         section.classList.add("page-enter");
@@ -7,8 +6,6 @@ $(window).on('load', function () {
             section.classList.add("page-enter-active");
         }, 20);
     }
-
-    // AQI hesaplama fonksiyonu
     function calculateAQI(pm25, pm10) {
         function aqiFromPM(pm, breakpoints) {
             if (pm === null || pm === undefined) return 0;
@@ -48,7 +45,6 @@ $(window).on('load', function () {
         return Math.round(Math.max(aqi_pm25 || 0, aqi_pm10 || 0));
     }
 
-    // JustGage tanımları
     const pm1Gauge = new JustGage({
         id: "pm1-gauge",
         value: 0,
@@ -97,7 +93,6 @@ $(window).on('load', function () {
     }, 500);
 
 
-    // Sensor verisi çekme
     function fetchSensorData() {
         $.getJSON('/sensor-data')
             .done(function (data) {
@@ -138,7 +133,6 @@ $(window).on('load', function () {
             });
     }
 
-    // Weather verisi çekme
     function fetchWeatherData() {
         $.getJSON('/weather-data')
             .done(function (data) {
@@ -148,7 +142,6 @@ $(window).on('load', function () {
                 if (data.wind_speed !== undefined) $('#wind').text(data.wind_speed + ' m/s');
                 if (data.weather_desc !== undefined) $('#condition').text(data.weather_desc);
 
-                // Icon renkleri
                 const desc = (data.weather_desc || '').toLowerCase();
                 if (desc.includes("sun") || desc.includes("clear")) $('#condition-icon').attr("class", "fa-solid fa-sun").css("color", "#FFD54F");
                 else if (desc.includes("cloud")) $('#condition-icon').attr("class", "fa-solid fa-cloud").css("color", "#B0BEC5");
@@ -157,7 +150,6 @@ $(window).on('load', function () {
                 else if (desc.includes("storm") || desc.includes("thunder")) $('#condition-icon').attr("class", "fa-solid fa-cloud-bolt").css("color", "#FFB74D");
                 else $('#condition-icon').attr("class", "fa-solid fa-cloud-sun").css("color", "#90CAF9");
 
-                // Sıcaklık rengi
                 const temp = Number(data.temperature);
                 if (!isNaN(temp)) {
                     if (temp < 0) $('#temp-icon').css('color', '#00B0FF');
@@ -166,11 +158,9 @@ $(window).on('load', function () {
                     else $('#temp-icon').css('color', '#FF7043');
                 }
 
-                // Nem rengi
                 const hum = Number(data.humidity);
                 if (!isNaN(hum)) $('#humidity-icon').css('color', hum > 70 ? '#42A5F5' : '#A5D6A7');
 
-                // Rüzgar rengi
                 const wind = Number(data.wind_speed);
                 if (!isNaN(wind)) $('#wind-icon').css('color', wind > 10 ? '#EF5350' : '#FFF176');
             })
@@ -179,11 +169,9 @@ $(window).on('load', function () {
             });
     }
 
-    // İlk veri çekme
     fetchSensorData();
     fetchWeatherData();
 
-    // Interval ile sürekli güncelle
     setInterval(fetchSensorData, 60000);
     setInterval(fetchWeatherData, 60000);
 });

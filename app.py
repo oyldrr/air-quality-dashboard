@@ -51,7 +51,7 @@ def get_sensor_data():
             if b2 != b'\x4D': continue
             frame = ser.read(30)
             if len(frame) != 30: continue
-            pm_data = frame[2:30]  # 28 byte veri
+            pm_data = frame[2:30]  
             data_parsed = struct.unpack(">HHHHHHHHHHHHHH", pm_data)
             pm1_cf1, pm25_cf1, pm10_cf1 = data_parsed[0], data_parsed[1], data_parsed[2]
             pm1_atm, pm25_atm, pm10_atm = data_parsed[3], data_parsed[4], data_parsed[5]
@@ -101,7 +101,7 @@ def get_sensor_data():
 
 
 
-API_KEY = "0ec18d9840616f60ed241475f874e555" #
+API_KEY = ""
 CITY = "Bydgoszcz,PL"
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
@@ -110,7 +110,6 @@ def get_weather_data():
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     data = {}
     try:
-        # OpenWeatherMap API'den veriyi çek
         resp = requests.get(BASE_URL, params={
             "q": CITY,
             "appid": API_KEY,
@@ -121,7 +120,6 @@ def get_weather_data():
         if resp.status_code != 200:
             raise Exception(f"OpenWeatherMap API error: {api_data.get('message', 'Unknown error')}")
         
-        # Verileri ayıkla
         data = {
             "temperature": api_data["main"]["temp"],
             "humidity": api_data["main"]["humidity"],
@@ -131,7 +129,6 @@ def get_weather_data():
             "timestamp": timestamp
         }
 
-        # DB'ye kaydet
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -173,7 +170,6 @@ def history_data():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # Sensor history
         cursor.execute("""
             SELECT id, timestamp, pm1_atm, pm25_atm, pm10_atm, is_connected
             FROM sensor_readings
@@ -182,7 +178,6 @@ def history_data():
         """)
         sensor_history = cursor.fetchall()
 
-        # Weather history
         cursor.execute("""
             SELECT id, timestamp, temperature, humidity, pressure, wind_speed, weather_desc
             FROM weather_readings
